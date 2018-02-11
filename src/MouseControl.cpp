@@ -225,12 +225,14 @@ printf("button : %d \n",n + 1);
 printf(	c.readmouse(n ));
 system(c.readmouse(n ));
 	    	}
-	  //    result += foo[n];
+	
 	    }
-
+// czyszczenie wartości zmiennych po wykonaniu testu
+s = "NN";
+tmp_btn = "NN";
 
 	idata[i] = 0;
-//	printf("\n");
+
 	}}}
 	}
 
