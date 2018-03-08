@@ -11,12 +11,14 @@
 #include "config.h"
 #include "usb.h"
 using namespace std;
+bool log = false;
 config c;
 char* btn_codes[] = {"1E", "1F", "20","21","22","23","24","25","26","27","57","56"};
 void info(char* argv[]) {
 	  // Użycie porgramu
 		        std::cerr << "Użycie: " << argv[0] << " -G Ustawienia w okienku gtk" << std::endl;
 		        std::cerr << "Użycie: " << argv[0] << " -D Uruchomienie Deamona" << std::endl;
+		        std::cerr << "Użycie: " << argv[0] << " -DL Uruchomienie Deamona i wyświetlanie Logów" << std::endl;
 }
 
 GtkEntry        *t1_Text  ;
@@ -177,7 +179,8 @@ void deamon2() {
 	    usb_find_busses();
 	    usb_find_devices();
 	    busses = usb_get_busses();
-
+		if (log ==true)
+	    printf("Szukanie urządenia ....");
 
 	    for (bus = busses; bus; bus = bus->next) {
 
@@ -188,13 +191,17 @@ void deamon2() {
 
 	        usb_dev_handle *l_Handle = usb_open( dev);
 	        if( NULL == l_Handle ){
-
+	        	if (log ==true)
+	        	 printf("Brak myszki");
+	        	 exit(0);
 	        }
 	usb_detach_kernel_driver_np(l_Handle,1);
 	        res = usb_claim_interface(l_Handle, 1);
+	    	if (log ==true) {
 	        if(res  == -16) {printf("Device interface not available to be claimed! \n"); }
 	        if(res == -12) {printf("Insufficient Memory! \n"); }
 	        printf("code: %d \n",res);
+	    	}
 	rezs = usb_interrupt_read(l_Handle, 0x82, data, 8, 2500);
 
 
@@ -211,6 +218,7 @@ void deamon2() {
 	if (idata[i] != 0) {
 		if (idata[i] != 01) {
 	if (idata[i] != 00) {
+		if (log ==true)
 	    printf("data: %02X \n", idata[i]);
 
 	    sprintf(tmp_btn,"%02X", idata[i]);
@@ -221,8 +229,11 @@ int n;
 	    for ( n=0 ; n<12 ; ++n )
 	    {
 	    	if (btn_codes[n] == s) {
+
+	    		if (log ==true) {
 printf("button : %d \n",n + 1);
 printf(	c.readmouse(n ));
+	    		}
 system(c.readmouse(n ));
 	    	}
 	
@@ -258,16 +269,22 @@ int main(int argc, char* argv[]) {
 	      info(argv);
 	        return 1;
 	    }
-	 if (!(std::string(argv[1]) == "-D" || std::string(argv[1]) == "-G" )) {
+	 if (!(std::string(argv[1]) == "-D" || std::string(argv[1]) == "-G" || std::string(argv[1]) == "-DL" )) {
 		  info(argv);
 		  return 1;
 	 }
 if (std::string(argv[1]) == "-G") {
 	gtksettings(argc,argv);
 }
+
 if (std::string(argv[1]) == "-D") {
 	deamon2();
 }
+if (std::string(argv[1]) == "-DL") {
+	log = true;
+	deamon2();
+}
+
 	    return 0;
 }
 
