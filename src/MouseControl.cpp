@@ -195,7 +195,7 @@ void deamon2() {
 	        if(res  == -16) {printf("Device interface not available to be claimed! \n"); }
 	        if(res == -12) {printf("Insufficient Memory! \n"); }
 	        printf("code: %d \n",res);
-	rezs = usb_interrupt_read(l_Handle, 0x82, data, 8, 5000);
+	rezs = usb_interrupt_read(l_Handle, 0x82, data, 8, 2500);
 
 
 
@@ -206,7 +206,7 @@ void deamon2() {
 	        ce=atoi(idata);
 	     //   printf( "\nMy data : %d\n",c);
 
-	for (i = 0; i < 7; i++)
+	for (i = 0; i <8; i++)
 	{
 	if (idata[i] != 0) {
 		if (idata[i] != 01) {
@@ -229,7 +229,7 @@ system(c.readmouse(n ));
 	    }
 // czyszczenie wartości zmiennych po wykonaniu testu
 s = "NN";
-tmp_btn = "NN";
+//tmp_btn = "NN";
 
 	idata[i] = 0;
 

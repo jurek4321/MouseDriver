@@ -9,14 +9,27 @@
 #include <iostream>
 #include "config.h"
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
+ char *homedir;
+ std::string homedir2;
 config_t cfg, *cf;;
 config_setting_t *array;
 //  config_setting_add
-  char *config_file_name = "config.cfg";
+ const char *config_file_name = "config.cfg";
+  std::string  config_file_name_std;
 config_setting_t *retries,*setting,*root;
   int count, n, enabled;
  void config::init() {
 
+	 if ((homedir = getenv("HOME")) == NULL) {
+	     homedir = getpwuid(getuid())->pw_dir;
+	 }
+	 homedir2 = homedir;
+	 config_file_name_std = homedir2 + "/.config/MouseControl.cfg";
+	 config_file_name = config_file_name_std.c_str();;
 	config_init(&cfg);
 	if (!config_read_file(&cfg, config_file_name))
 	    {
