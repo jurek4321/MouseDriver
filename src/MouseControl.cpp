@@ -10,10 +10,17 @@
 #include <gtk/gtk.h>
 #include "config.h"
 #include "usb.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 using namespace std;
 bool log = false;
 config c;
-char* btn_codes[] = {"1E", "1F", "20","21","22","23","24","25","26","27","57","56"};
+char *homedir_1;
+ std::string homedir2_1;
+ const char *view_file_name = "config.cfg";
+  std::string  view_file_name_std;
+ char* btn_codes[] = {"1E", "1F", "20","21","22","23","24","25","26","27","57","56"};
 void info(char* argv[]) {
 	  // Użycie porgramu
 		        std::cerr << "Użycie: " << argv[0] << " -G Ustawienia w okienku gtk" << std::endl;
@@ -120,7 +127,13 @@ void gtksettings(int argc, char* argv[]){
 	    gtk_init(&argc, &argv);
 
 	    builder = gtk_builder_new();
-	    gtk_builder_add_from_file (builder, "view.glade", NULL);
+	    if ((homedir_1 = getenv("HOME")) == NULL) {
+	   	     homedir_1 = getpwuid(getuid())->pw_dir;
+	   	 }
+	   	 homedir2_1 = homedir_1;
+	   	 view_file_name_std = homedir2_1 + "/.config/MouseControl_view.glade";
+	   	 view_file_name = view_file_name_std.c_str();;
+	    gtk_builder_add_from_file (builder, view_file_name, NULL);
 
 	    window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
 	    buttonCancel = GTK_WIDGET(gtk_builder_get_object (builder, "Cancel"));
