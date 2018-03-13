@@ -231,26 +231,31 @@ void deamon2() {
 	if (idata[i] != 0) {
 		if (idata[i] != 01) {
 	if (idata[i] != 00) {
-		if (log ==true)
+		if (log ==true) {
 			printf("\n");
 			 printf("===Uwaga Tu często pojawiają się błędy === \n");
 	    printf("data: %02X \n", idata[i]);
+		}
 		tmp_btn = "wErr01";
-
+		if (log ==true)
 	    printf("pre parse \n");
 	    char wm[3];
 	    sprintf(wm,"%02X", idata[i]);
+	    if (log ==true)
 	    printf(wm);
 	    tmp_btn = wm ;
+	    if (log ==true)
 	    printf("parse ok \n");
 	    std::string s = "wErr02";
 	    s = tmp_btn;
-
+	    if (log ==true) {
 	    printf("set val ok val = ");
 	    printf(tmp_btn);
 	    printf("\n");
+	    printf("===Tu już rzadziej=== \n");
+	}
 int n;
-printf("===Tu już rzadziej=== \n");
+
 	    for ( n=0 ; n<12 ; ++n )
 	    {
 	    	if (btn_codes[n] == s) {
