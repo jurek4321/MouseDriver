@@ -264,7 +264,7 @@ system(c.readmouse(n ));
 	
 	    }
 // czyszczenie wartości zmiennych po wykonaniu testu
-//s = "NN";
+s = "NN";
 //tmp_btn = "NN";
 
 	idata[i] = 0;
