@@ -232,13 +232,25 @@ void deamon2() {
 		if (idata[i] != 01) {
 	if (idata[i] != 00) {
 		if (log ==true)
+			printf("\n");
+			 printf("===Uwaga Tu często pojawiają się błędy === \n");
 	    printf("data: %02X \n", idata[i]);
+		tmp_btn = "wErr01";
 
-	    sprintf(tmp_btn,"%02X", idata[i]);
-	    std::string s = tmp_btn;
+	    printf("pre parse \n");
+	    char wm[3];
+	    sprintf(wm,"%02X", idata[i]);
+	    printf(wm);
+	    tmp_btn = wm ;
+	    printf("parse ok \n");
+	    std::string s = "wErr02";
+	    s = tmp_btn;
 
+	    printf("set val ok val = ");
+	    printf(tmp_btn);
+	    printf("\n");
 int n;
-
+printf("===Tu już rzadziej=== \n");
 	    for ( n=0 ; n<12 ; ++n )
 	    {
 	    	if (btn_codes[n] == s) {
@@ -252,7 +264,7 @@ system(c.readmouse(n ));
 	
 	    }
 // czyszczenie wartości zmiennych po wykonaniu testu
-s = "NN";
+//s = "NN";
 //tmp_btn = "NN";
 
 	idata[i] = 0;
