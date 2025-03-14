@@ -22,7 +22,7 @@ uint16_t supportedVidPid[2][2] = {
 		{0x04d9, 0xfc55},
 };
 
-uint8_t btn_codesH[] = {0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x27, 0x57, 0x56};
+uint8_t btn_codesH[] = {0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x57, 0x56};
 
 GtkEntry        *t1_Text  ;
 GtkEntry        *t2_Text  ;
@@ -186,10 +186,10 @@ void deamon2() {
 	    					break;
 	    				}
 	    				for (int i = 0; i <8; i++) {
-	    					if (data[i] != 0 && data[i] != 1) {
+	    					if (data[i] && data[i] != 1) {
 	    						for (int n=0; n<12; n++) {
 	    							if (btn_codesH[n] == data[i]) {
-	    								system(c.readmouse(n ));
+	    								system(c.readmouse(n));
 	    							}
 	    						}
 	    					}
