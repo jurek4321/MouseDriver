@@ -9,24 +9,20 @@
 #include <iostream>
 #include <gtk/gtk.h>
 #include "config.h"
-#include "usb.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <usb.h>
 using namespace std;
 bool log = false;
 config c;
-char *homedir_1;
- std::string homedir2_1;
- const char *view_file_name = "config.cfg";
-  std::string  view_file_name_std;
- char* btn_codes[] = {"1E", "1F", "20","21","22","23","24","25","26","27","57","56"};
-void info(char* argv[]) {
-	  // Użycie porgramu
-		        std::cerr << "Użycie: " << argv[0] << " -G Ustawienia w okienku gtk" << std::endl;
-		        std::cerr << "Użycie: " << argv[0] << " -D Uruchomienie Deamona" << std::endl;
-		        std::cerr << "Użycie: " << argv[0] << " -DL Uruchomienie Deamona i wyświetlanie Logów" << std::endl;
-}
+
+uint16_t supportedVidPid[2][2] = {
+		{0x04d9, 0xfc02},
+		{0x04d9, 0xfc55},
+};
+
+uint8_t btn_codesH[] = {0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x27, 0x57, 0x56};
 
 GtkEntry        *t1_Text  ;
 GtkEntry        *t2_Text  ;
@@ -40,35 +36,23 @@ GtkEntry        *t9_Text  ;
 GtkEntry        *t10_Text  ;
 GtkEntry        *t11_Text  ;
 GtkEntry        *t12_Text  ;
-//std::vector<GtkEntry > codebox(1);
-
-
-
-
-
-//codebox* = [t1_Text,t2_Text];
 
 GtkBuilder      *builder;
 
-
-
 void load() {
-
-
-	   gtk_entry_set_text( t1_Text,c.readmouse(0));
-	   gtk_entry_set_text( t2_Text,c.readmouse(1));
-	   gtk_entry_set_text( t3_Text,c.readmouse(2));
-	   gtk_entry_set_text( t4_Text,c.readmouse(3));
-	   gtk_entry_set_text( t5_Text,c.readmouse(4));
-	   gtk_entry_set_text( t6_Text,c.readmouse(5));
-	   gtk_entry_set_text( t7_Text,c.readmouse(6));
-	   gtk_entry_set_text( t8_Text,c.readmouse(7));
-	   gtk_entry_set_text( t9_Text,c.readmouse(8));
-	   gtk_entry_set_text( t10_Text,c.readmouse(9));
-	   gtk_entry_set_text( t11_Text,c.readmouse(10));
-	   gtk_entry_set_text( t12_Text,c.readmouse(11));
+	gtk_entry_set_text( t1_Text,c.readmouse(0));
+	gtk_entry_set_text( t2_Text,c.readmouse(1));
+	gtk_entry_set_text( t3_Text,c.readmouse(2));
+	gtk_entry_set_text( t4_Text,c.readmouse(3));
+	gtk_entry_set_text( t5_Text,c.readmouse(4));
+	gtk_entry_set_text( t6_Text,c.readmouse(5));
+	gtk_entry_set_text( t7_Text,c.readmouse(6));
+	gtk_entry_set_text( t8_Text,c.readmouse(7));
+	gtk_entry_set_text( t9_Text,c.readmouse(8));
+	gtk_entry_set_text( t10_Text,c.readmouse(9));
+	gtk_entry_set_text( t11_Text,c.readmouse(10));
+	gtk_entry_set_text( t12_Text,c.readmouse(11));
 }
-
 
 bool save() {
 	int e = 0;
@@ -85,33 +69,21 @@ bool save() {
 	e += (int)c.writemouse(9,( char*)gtk_entry_get_text (t10_Text));
 	e += (int)c.writemouse(10,( char*)gtk_entry_get_text (t11_Text));
 	e += (int)c.writemouse(11,( char*)gtk_entry_get_text (t12_Text));
-if (e == 12) {
-return true;
-} else {
-return false;
+	if (e == 12) {
+		return true;
+	} else {
+		return false;
+	}
 }
-}
-
-
-
 
 void Cancel_clicked_cb() {
-
-
 	 gtk_main_quit();
 }
 
-
-
-
-
-
 void Save_clicked_cb() {
-
    if  (!save()) {
 	   g_print("błąd zapisu");
 	   gtk_main_quit();
-
    }
 }
 
@@ -120,202 +92,142 @@ void on_window_main_destroy(GtkWidget *widget, gpointer   data ){
 }
 
 void gtksettings(int argc, char* argv[]){
+	GtkWidget *buttonCancel,*buttonSave;
+	GtkWidget       *window;
 
-	  GtkWidget *buttonCancel,*buttonSave;
-	    GtkWidget       *window;
+	gtk_init(&argc, &argv);
 
-	    gtk_init(&argc, &argv);
+	builder = gtk_builder_new();
 
-	    builder = gtk_builder_new();
-	    if ((homedir_1 = getenv("HOME")) == NULL) {
-	   	     homedir_1 = getpwuid(getuid())->pw_dir;
-	   	 }
-	   	 homedir2_1 = homedir_1;
-	   	 view_file_name_std = homedir2_1 + "/.config/MouseControl_view.glade";
-	   	 view_file_name = view_file_name_std.c_str();;
-	    gtk_builder_add_from_file (builder, view_file_name, NULL);
+	char *homedir1;
+	if ((homedir1 = getenv("HOME")) == NULL) {
+		homedir1 = getpwuid(getuid())->pw_dir;
+	}
+	string homedir = homedir1;
+	string view_file_name_std = homedir + "/.config/MouseControl_view.glade";
+	gtk_builder_add_from_file (builder, view_file_name_std.c_str(), NULL);
 
-	    window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
-	    buttonCancel = GTK_WIDGET(gtk_builder_get_object (builder, "Cancel"));
-	    buttonSave = GTK_WIDGET(gtk_builder_get_object (builder, "Save"));
+	window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
+	buttonCancel = GTK_WIDGET(gtk_builder_get_object (builder, "Cancel"));
+	buttonSave = GTK_WIDGET(gtk_builder_get_object (builder, "Save"));
 
-	    t1_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t1"));
-	    t2_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t2"));
-	    t3_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t3"));
-	    t4_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t4"));
-	    t5_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t5"));
-	    t6_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t6"));
-	    t7_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t7"));
-	    t8_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t8"));
-	    t9_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t9"));
-	    t10_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t10"));
-	    t11_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t11"));
-	    t12_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t12"));
+	t1_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t1"));
+	t2_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t2"));
+	t3_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t3"));
+	t4_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t4"));
+	t5_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t5"));
+	t6_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t6"));
+	t7_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t7"));
+	t8_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t8"));
+	t9_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t9"));
+	t10_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t10"));
+	t11_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t11"));
+	t12_Text = GTK_ENTRY(gtk_builder_get_object(builder, "t12"));
 
-	    c.init();
+	c.init();
 
+	g_signal_connect (buttonCancel, "clicked", G_CALLBACK(Cancel_clicked_cb), NULL);
+	g_signal_connect (buttonSave, "clicked", G_CALLBACK(Save_clicked_cb), NULL);
+	g_signal_connect (window, "destroy", G_CALLBACK(on_window_main_destroy), NULL);
 
+	g_object_unref(builder);
 
-	    g_signal_connect (buttonCancel, "clicked", G_CALLBACK(Cancel_clicked_cb), NULL);
-	    g_signal_connect (buttonSave, "clicked", G_CALLBACK(Save_clicked_cb), NULL);
-	   	g_signal_connect (window, "destroy", G_CALLBACK(on_window_main_destroy), NULL);
+	gtk_widget_show(window);
 
-	    g_object_unref(builder);
+	load();
 
-	    gtk_widget_show(window);
+	gtk_main();
+}
 
-	    load();
-
-	    gtk_main();
-
-
-
-
+bool matchUsbVidPid(uint16_t vid, uint16_t pid) {
+	int elems = sizeof(supportedVidPid)/sizeof(supportedVidPid[0]);
+	for (int i =0; i < elems; i++) {
+		if (vid == supportedVidPid[i][0] && pid == supportedVidPid[i][1])
+			return true;
+	}
+	return false;
 }
 
 
 void deamon2() {
 	c.init();
-
-	 char* tmp_btn;
 	while (true) {
-
-	    struct usb_bus *busses;
+		struct usb_bus *busses;
 	    struct usb_bus *bus;
 	    struct usb_device *dev;
-	    int ce, i, res,rezs;
-	res =0 ;
-	    char data[765];
-	    char idata[10];
+	    char data[8];
 
 	    usb_init();
 	    usb_find_busses();
 	    usb_find_devices();
 	    busses = usb_get_busses();
-		if (log ==true)
-	    printf("Szukanie urządenia ....");
+		if (log ==true) printf("Szukanie urządenia ....");
 
 	    for (bus = busses; bus; bus = bus->next) {
-
-	        for (dev = bus->devices; dev; dev = dev->next) {
-	        if(dev->descriptor.idProduct == 0xfc02 && dev->descriptor.idVendor == 0x04d9) {
-	     //   printf("Product id: %04hx" ,dev->descriptor.idProduct);
-	     //   printf("Vendor id: %04hx \n" ,dev->descriptor.idVendor);
-
-	        usb_dev_handle *l_Handle = usb_open( dev);
-	        if( NULL == l_Handle ){
-	        	if (log ==true)
-	        	 printf("Brak myszki");
-	        	 exit(0);
-	        }
-	usb_detach_kernel_driver_np(l_Handle,1);
-	        res = usb_claim_interface(l_Handle, 1);
-	    	if (log ==true) {
-	        if(res  == -16) {printf("Device interface not available to be claimed! \n"); }
-	        if(res == -12) {printf("Insufficient Memory! \n"); }
-	        printf("code: %d \n",res);
-	    	}
-	rezs = usb_interrupt_read(l_Handle, 0x82, data, 8, 2500);
-
-
-
-	 ce=-1;
-	               for(i=1;i<8;i++) {
-	            idata[++ce] = data[i];
-	        }
-	        ce=atoi(idata);
-	     //   printf( "\nMy data : %d\n",c);
-
-	for (i = 0; i <8; i++)
-	{
-	if (idata[i] != 0) {
-		if (idata[i] != 01) {
-	if (idata[i] != 00) {
-		if (log ==true) {
-			printf("\n");
-			 printf("===Uwaga Tu często pojawiają się błędy === \n");
-	    printf("data: %02X \n", idata[i]);
-		}
-		tmp_btn = "wErr01";
-		if (log ==true)
-	    printf("pre parse \n");
-	    char wm[3];
-	    sprintf(wm,"%02X", idata[i]);
-	    if (log ==true)
-	    printf(wm);
-	    tmp_btn = wm ;
-	    if (log ==true)
-	    printf("parse ok \n");
-	    std::string s = "wErr02";
-	    s = tmp_btn;
-	    if (log ==true) {
-	    printf("set val ok val = ");
-	    printf(tmp_btn);
-	    printf("\n");
-	    printf("===Tu już rzadziej=== \n");
-	}
-int n;
-
-	    for ( n=0 ; n<12 ; ++n )
-	    {
-	    	if (btn_codes[n] == s) {
-
-	    		if (log ==true) {
-printf("button : %d \n",n + 1);
-printf(	c.readmouse(n ));
+	    	for (dev = bus->devices; dev; dev = dev->next) {
+	    		if (matchUsbVidPid(dev->descriptor.idVendor, dev->descriptor.idProduct)) {
+	    			usb_dev_handle *l_Handle = usb_open( dev);
+	    			if( NULL == l_Handle ){
+	    				exit(0);
+	    			}
+	    			usb_detach_kernel_driver_np(l_Handle,1);
+	    			int res = usb_claim_interface(l_Handle, 1);
+	    			if (log ==true) {
+	    				if(res  == -16) {printf("Device interface not available to be claimed! \n"); }
+	    				if(res == -12) {printf("Insufficient Memory! \n"); }
+	    				printf("usb_claim_interface rsp: %d\n", res);
+	    			}
+	    			bool work = true;
+	    			while (work) {
+	    				memset(data, 0x00, 8);
+	    				int readRsp = usb_interrupt_read(l_Handle, 0x82, data, 8, 1500);
+	    				if (readRsp < 0 && readRsp != -110) {
+	    					work = false;
+	    					break;
+	    				}
+	    				for (int i = 0; i <8; i++) {
+	    					if (data[i] != 0 && data[i] != 1) {
+	    						for (int n=0; n<12; n++) {
+	    							if (btn_codesH[n] == data[i]) {
+	    								system(c.readmouse(n ));
+	    							}
+	    						}
+	    					}
+	    				}
+	    			}
+	    			usb_release_interface(l_Handle, 0);
+	    			usb_close(l_Handle);
 	    		}
-system(c.readmouse(n ));
 	    	}
-	
 	    }
-// czyszczenie wartości zmiennych po wykonaniu testu
-s = "NN";
-//tmp_btn = "NN";
-
-	idata[i] = 0;
-
-	}}}
 	}
-
-
-	        usb_release_interface(l_Handle, 0);
-	        usb_close(l_Handle);
-	        }
-	       }
-	    }
-
-	}
-
-
 }
 
-
-
+void info(char* argv[]) {
+	cerr << "Użycie: " << argv[0] << " -G Ustawienia w okienku gtk" << endl;
+	cerr << "Użycie: " << argv[0] << " -D Uruchomienie Deamona" << endl;
+	cerr << "Użycie: " << argv[0] << " -DL Uruchomienie Deamona i wyświetlanie Logów" << endl;
+}
 
 int main(int argc, char* argv[]) {
+	if (argc < 2) {
+		info(argv);
+		return 1;
+	}
+	if (!(string(argv[1]) == "-D" || string(argv[1]) == "-G" || string(argv[1]) == "-DL" )) {
+		info(argv);
+		return 1;
+	}
+	if (string(argv[1]) == "-G") {
+		gtksettings(argc,argv);
+	}
 
-	// Sprawdzenie poprawności argumentów
-	 if (argc < 2) {
-	      info(argv);
-	        return 1;
-	    }
-	 if (!(std::string(argv[1]) == "-D" || std::string(argv[1]) == "-G" || std::string(argv[1]) == "-DL" )) {
-		  info(argv);
-		  return 1;
-	 }
-if (std::string(argv[1]) == "-G") {
-	gtksettings(argc,argv);
+	if (string(argv[1]) == "-D") {
+		deamon2();
+	}
+	if (string(argv[1]) == "-DL") {
+		log = true;
+		deamon2();
+	}
+	return 0;
 }
-
-if (std::string(argv[1]) == "-D") {
-	deamon2();
-}
-if (std::string(argv[1]) == "-DL") {
-	log = true;
-	deamon2();
-}
-
-	    return 0;
-}
-
-
