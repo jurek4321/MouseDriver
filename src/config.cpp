@@ -62,7 +62,7 @@ char* config::readmouse(int mouse) {
 			return	(char*)config_setting_get_string_elem(retries, mouse);
 	 	}
 	}
-	return "error";
+	return "err";
 }
 
 bool config::writemouse(int mouse,char* code) {

@@ -14,7 +14,7 @@
 #include <pwd.h>
 #include <usb.h>
 using namespace std;
-bool log = false;
+bool logEn = false;
 config c;
 
 uint16_t supportedVidPid[2][2] = {
@@ -161,7 +161,7 @@ void deamon2() {
 	    usb_find_busses();
 	    usb_find_devices();
 	    busses = usb_get_busses();
-		if (log ==true) printf("Szukanie urządenia ....");
+		if (logEn) printf("Szukanie urządenia ....");
 
 	    for (bus = busses; bus; bus = bus->next) {
 	    	for (dev = bus->devices; dev; dev = dev->next) {
@@ -172,7 +172,7 @@ void deamon2() {
 	    			}
 	    			usb_detach_kernel_driver_np(l_Handle,1);
 	    			int res = usb_claim_interface(l_Handle, 1);
-	    			if (log ==true) {
+	    			if (logEn) {
 	    				if(res  == -16) {printf("Device interface not available to be claimed! \n"); }
 	    				if(res == -12) {printf("Insufficient Memory! \n"); }
 	    				printf("usb_claim_interface rsp: %d\n", res);
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
 		deamon2();
 	}
 	if (string(argv[1]) == "-DL") {
-		log = true;
+		logEn = true;
 		deamon2();
 	}
 	return 0;
